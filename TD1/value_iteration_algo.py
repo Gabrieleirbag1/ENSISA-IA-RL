@@ -29,7 +29,6 @@ def value_iteration(n, Gamma, threshold):
                     max_value = max(max_value, value)
 
                     if value > best_max_value:
-                        print(value, best_max_value)
                         best_max_value = value
                         best_action = action
                 
