@@ -10,7 +10,8 @@ def update_q_table(Q, s, a, r, sprime, alpha, gamma):
     the reward, the next state sprime, alpha the learning rate and gamma the discount factor.
     Return the same input Q but updated for the pair s and a.
     """
-    print(Q, s, a, r, sprime, alpha, gamma)
+    # Q-Learning update rule: Q(s,a) = Q(s,a) + alpha * [r + gamma * max(Q(s',a')) - Q(s,a)]
+    Q[s, a] = Q[s, a] + alpha * (r + gamma * np.max(Q[sprime]) - Q[s, a])
     return Q
 
 
