@@ -21,7 +21,6 @@ def epsilon_greedy(Q, s, epsilone):
     Takes as unput the Q function for all states, a state s, and epsilon.
     It should return the action to take following the epsilon greedy algorithm.
     """
-
     if np.random.rand() < epsilone:
         return np.random.randint(0, Q.shape[1])
     else:
@@ -35,49 +34,93 @@ if __name__ == "__main__":
 
     Q = np.zeros([env.observation_space.n, env.action_space.n])
 
-    alpha = 0.01 # choose your own
+    alpha = 0.1
+    gamma = 0.99
+    epsilon = 0.1
 
-    gamma = 0.8 # choose your own
-
-    epsilon = 0.2 # choose your own
-
-    n_epochs = 20 # choose your own
-    max_itr_per_epoch = 10000 # choose your own
+    n_epochs = 1
+    max_itr_per_epoch = 200
     rewards = []
 
     for e in range(n_epochs):
-        r = 0
-
+        r = 0  # Total reward for this episode
         S, _ = env.reset()
 
         for _ in range(max_itr_per_epoch):
             A = epsilon_greedy(Q=Q, s=S, epsilone=epsilon)
 
-            Sprime, R, done, _, info = env.step(A)
+            Sprime, R, done, truncated, info = env.step(A)
 
-            r += R
+            r += R # add reward
 
             Q = update_q_table(
                 Q=Q, s=S, a=A, r=R, sprime=Sprime, alpha=alpha, gamma=gamma
             )
 
-            # Update state and put a stoping criteria
+            S = Sprime
 
-        print("episode #", e, " : r = ", r)
+            if done or truncated:
+                break
+
+        epsilon = max(0.01, epsilon * 0.995)
+
+        if e % 100 == 0:
+            print(f"Episode #{e} : reward = {r}, epsilon = {epsilon:.3f}")
 
         rewards.append(r)
 
-    print("Average reward = ", np.mean(rewards))
+    print(f"\nAverage reward over last 100 episodes = {np.mean(rewards[-100:]):.2f}")
 
-    # plot the rewards in function of epochs
+    # Plot the rewards
+    plt.figure(figsize=(12, 5))
+    
+    plt.subplot(1, 2, 1)
+    plt.plot(rewards)
+    plt.xlabel('Episode')
+    plt.ylabel('Total Reward')
+    plt.title('Reward per Episode')
+    plt.grid(True)
+    
+    plt.subplot(1, 2, 2)
+    # Moving average
+    window = 50
+    moving_avg = np.convolve(rewards, np.ones(window)/window, mode='valid')
+    plt.plot(moving_avg)
+    plt.xlabel('Episode')
+    plt.ylabel('Average Reward')
+    plt.title(f'Moving Average (window={window})')
+    plt.grid(True)
+    
+    plt.tight_layout()
+    plt.savefig('training_results.png')
+    plt.show()
 
     print("Training finished.\n")
 
+    # Evaluate the q-learning algorithm
+    print("Evaluating trained agent...")
+    env_eval = gym.make("Taxi-v3", render_mode="human")
     
-    """
+    n_eval_episodes = 10
+    eval_rewards = []
     
-    Evaluate the q-learning algorihtm
+    for e in range(n_eval_episodes):
+        S, _ = env_eval.reset()
+        total_reward = 0
+        
+        for _ in range(max_itr_per_epoch):
+            # Use greedy policy (no exploration)
+            A = Q[S].argmax()
+            S, R, done, truncated, _ = env_eval.step(A)
+            total_reward += R
+            
+            if done or truncated:
+                break
+        
+        eval_rewards.append(total_reward)
+        print(f"Evaluation episode {e+1}: reward = {total_reward}")
     
-    """
+    print(f"\nAverage evaluation reward = {np.mean(eval_rewards):.2f}")
 
     env.close()
+    env_eval.close()
