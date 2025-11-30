@@ -10,6 +10,8 @@ def update_q_table(Q, s, a, r, sprime, alpha, gamma):
     the reward, the next state sprime, alpha the learning rate and gamma the discount factor.
     Return the same input Q but updated for the pair s and a.
     """
+    print(Q, s, a, r, sprime, alpha, gamma)
+    return Q
 
 
 def epsilon_greedy(Q, s, epsilone):
@@ -19,6 +21,10 @@ def epsilon_greedy(Q, s, epsilone):
     It should return the action to take following the epsilon greedy algorithm.
     """
 
+    if np.random.rand() < epsilone:
+        return np.random.randint(0, Q.shape[1])
+    else:
+        return Q[s].argmax()
 
 if __name__ == "__main__":
     env = gym.make("Taxi-v3", render_mode="human")
@@ -35,7 +41,7 @@ if __name__ == "__main__":
     epsilon = 0.2 # choose your own
 
     n_epochs = 20 # choose your own
-    max_itr_per_epoch = 100 # choose your own
+    max_itr_per_epoch = 10000 # choose your own
     rewards = []
 
     for e in range(n_epochs):
