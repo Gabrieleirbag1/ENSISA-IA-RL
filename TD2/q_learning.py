@@ -38,7 +38,7 @@ if __name__ == "__main__":
     gamma = 0.99
     epsilon = 0.1
 
-    n_epochs = 1
+    n_epochs = 100
     max_itr_per_epoch = 200
     rewards = []
 
@@ -64,8 +64,7 @@ if __name__ == "__main__":
 
         epsilon = max(0.01, epsilon * 0.995)
 
-        if e % 100 == 0:
-            print(f"Episode #{e} : reward = {r}, epsilon = {epsilon:.3f}")
+        print(f"Episode #{e} : reward = {r}, epsilon = {epsilon:.3f}")
 
         rewards.append(r)
 
